@@ -1,0 +1,288 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: light;
+  --bg: #0f141b;
+  --bg-soft: #151d26;
+  --bg-card: #1c2531;
+  --bg-glow: #2a3a4f;
+  --accent: #f7c948;
+  --accent-2: #63d4ff;
+  --text: #f4f7fb;
+  --text-muted: #a9b4c4;
+  --stroke: rgba(255, 255, 255, 0.12);
+  --shadow: 0 20px 40px rgba(10, 16, 24, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background: radial-gradient(circle at top, #1f2b3a 0%, var(--bg) 45%, #0b0f14 100%);
+  color: var(--text);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bg-orbit {
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(99, 212, 255, 0.4), transparent 60%);
+  filter: blur(10px);
+  opacity: 0.6;
+  animation: drift 16s ease-in-out infinite;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 120px 120px;
+  mask-image: radial-gradient(circle at 20% 20%, black, transparent 70%);
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  padding: 48px 6vw 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.eyebrow {
+  color: var(--accent-2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-family: "DM Serif Display", serif;
+  font-size: clamp(36px, 5vw, 64px);
+  margin-bottom: 12px;
+}
+
+.lead {
+  color: var(--text-muted);
+  font-size: 18px;
+  max-width: 500px;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, rgba(247, 201, 72, 0.2), rgba(99, 212, 255, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  padding: 28px 32px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.hero-time {
+  font-size: clamp(36px, 6vw, 54px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.hero-meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.dot {
+  color: var(--accent);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.control-card {
+  background: var(--bg-card);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.control-card label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  background: var(--bg-soft);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+button {
+  background: var(--accent);
+  color: #1b160a;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(247, 201, 72, 0.25);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--stroke);
+  box-shadow: none;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-head h2 {
+  font-size: 22px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  animation: rise 0.6s ease both;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(99, 212, 255, 0.12), transparent 70%);
+  opacity: 0.6;
+}
+
+.card h3 {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.card .time {
+  position: relative;
+  z-index: 1;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.card .meta {
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.card .remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-40px, 30px);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-card {
+    order: -1;
+  }
+  .input-row {
+    flex-direction: column;
+  }
+}
