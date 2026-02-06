@@ -20,6 +20,7 @@ const state = {
   activeLabel: null,
   activeSunrise: null,
   activeSunset: null,
+  locationLabel: null,
 };
 
 const cards = document.getElementById("cards");
@@ -37,6 +38,8 @@ const syncStatus = document.getElementById("syncStatus");
 const syncDelta = document.getElementById("syncDelta");
 const terminatorPath = document.getElementById("terminator");
 const mapLand = document.getElementById("mapLand");
+const mapLandClip = document.getElementById("mapLandClip");
+const tzBands = document.getElementById("tzBands");
 const userDot = document.getElementById("userDot");
 
 const timeFmt = new Intl.DateTimeFormat("en-US", {
@@ -77,8 +80,53 @@ function formatSun(timeIso, tz) {
   }).format(dt);
 }
 
+const TZ_BAND_COLORS = [
+  "#2d6a8a",
+  "#3a8fb7",
+  "#4aa3a8",
+  "#5b8f6f",
+  "#7aa85f",
+  "#a7b35d",
+  "#c9a65f",
+  "#d48a5f",
+  "#d66a64",
+  "#c55a7d",
+  "#8a6aa8",
+  "#5f6bb3",
+  "#4e7fc2",
+  "#3e94c7",
+  "#3da6b3",
+  "#58b07f",
+  "#8ab36a",
+  "#b7b86c",
+  "#d7b46e",
+  "#d6976b",
+  "#c97a6b",
+  "#b36a7b",
+  "#8e6a9c",
+  "#6d6fa8",
+];
+
+function renderTimezoneBands() {
+  if (!tzBands) return;
+  tzBands.innerHTML = "";
+  const width = 800;
+  const height = 400;
+  const bandWidth = width / 24;
+  for (let i = 0; i < 24; i += 1) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", (i * bandWidth).toFixed(2));
+    rect.setAttribute("y", "0");
+    rect.setAttribute("width", bandWidth.toFixed(2));
+    rect.setAttribute("height", height.toFixed(2));
+    rect.setAttribute("fill", TZ_BAND_COLORS[i % TZ_BAND_COLORS.length]);
+    rect.setAttribute("fill-opacity", "0.45");
+    tzBands.appendChild(rect);
+  }
+}
+
 function updateLocationLine() {
-  const label = state.activeLabel || state.localLabel;
+  const label = state.locationLabel || state.localLabel;
   if (label) {
     locationLine.textContent = `Time in ${label}`;
   } else {
@@ -93,7 +141,6 @@ function setActiveCity(city) {
   state.activeLabel = city.label ?? null;
   state.activeSunrise = city.sunrise ?? null;
   state.activeSunset = city.sunset ?? null;
-  updateLocationLine();
   updateUserDot();
   updateTimes();
 }
@@ -315,6 +362,10 @@ async function loadMap() {
       .fitSize([800, 400], land);
     const path = window.d3.geoPath(projection);
     mapLand.setAttribute("d", path(land));
+    if (mapLandClip) {
+      mapLandClip.setAttribute("d", path(land));
+    }
+    renderTimezoneBands();
     state.projection = projection;
     updateTerminator();
   } catch (err) {
@@ -430,6 +481,8 @@ async function addCity() {
       lat: data.latitude,
       lon: data.longitude,
     });
+    state.locationLabel = data.label;
+    updateLocationLine();
     cityInput.placeholder = "e.g. Mexico City";
     if (cityHint) {
       cityHint.textContent = "Search by city name and we’ll find the timezone.";

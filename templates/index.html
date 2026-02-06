@@ -126,9 +126,15 @@
             aria-label="World map with day and night boundary"
           >
             <rect width="800" height="400" fill="rgba(15, 23, 42, 0.6)"></rect>
+            <defs>
+              <clipPath id="landClip">
+                <path id="mapLandClip" d=""></path>
+              </clipPath>
+            </defs>
+            <g id="tzBands" clip-path="url(#landClip)"></g>
             <path
               id="mapLand"
-              fill="rgba(216, 221, 231, 0.4)"
+              fill="none"
               stroke="rgba(216, 221, 231, 0.2)"
               stroke-width="0.6"
             ></path>
@@ -141,6 +147,37 @@
             ></path>
             <circle id="userDot" r="5" fill="rgba(247, 201, 72, 0.95)"></circle>
           </svg>
+          <div
+            class="mt-3 grid gap-0 text-[10px] uppercase tracking-[0.25em] text-silver-300/80"
+            style="grid-template-columns: repeat(25, minmax(0, 1fr));"
+            aria-hidden="true"
+          >
+            <span class="text-center">-12</span>
+            <span class="text-center">-11</span>
+            <span class="text-center">-10</span>
+            <span class="text-center">-9</span>
+            <span class="text-center">-8</span>
+            <span class="text-center">-7</span>
+            <span class="text-center">-6</span>
+            <span class="text-center">-5</span>
+            <span class="text-center">-4</span>
+            <span class="text-center">-3</span>
+            <span class="text-center">-2</span>
+            <span class="text-center">-1</span>
+            <span class="text-center">UTC</span>
+            <span class="text-center">+1</span>
+            <span class="text-center">+2</span>
+            <span class="text-center">+3</span>
+            <span class="text-center">+4</span>
+            <span class="text-center">+5</span>
+            <span class="text-center">+6</span>
+            <span class="text-center">+7</span>
+            <span class="text-center">+8</span>
+            <span class="text-center">+9</span>
+            <span class="text-center">+10</span>
+            <span class="text-center">+11</span>
+            <span class="text-center">+12</span>
+          </div>
         </div>
       </section>
 
