@@ -236,5 +236,35 @@ def api_city():
         return jsonify({"error": "lookup failed"}), 502
 
 
+@app.route("/api/weather")
+def api_weather():
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+    if lat is None or lon is None:
+        return jsonify({"error": "missing coordinates"}), 400
+    try:
+        res = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "current": "temperature_2m,weather_code,is_day",
+                "temperature_unit": "celsius",
+            },
+            timeout=3,
+            headers={"User-Agent": "time-web"},
+        )
+        if not res.ok:
+            return jsonify({"error": "weather failed"}), 502
+        data = res.json()
+        current = data.get("current") or {}
+        temp = current.get("temperature_2m")
+        code = current.get("weather_code")
+        is_day = current.get("is_day")
+        return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
+    except Exception:
+        return jsonify({"error": "weather failed"}), 502
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5173)

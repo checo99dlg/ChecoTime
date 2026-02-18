@@ -21,6 +21,7 @@ const state = {
   activeSunrise: null,
   activeSunset: null,
   locationLabel: null,
+  lastWeatherKey: null,
 };
 
 const cards = document.getElementById("cards");
@@ -30,6 +31,10 @@ const heroZone = document.getElementById("heroZone");
 const heroSun = document.getElementById("heroSun");
 const heroSuffix = document.getElementById("heroSuffix");
 const locationLine = document.getElementById("locationLine");
+const heroWeather = document.getElementById("heroWeather");
+const heroWeatherText = heroWeather
+  ? heroWeather.querySelector(".wx-text")
+  : null;
 const cityInput = document.getElementById("cityInput");
 const addCityBtn = document.getElementById("addCityBtn");
 const cityHint = document.getElementById("cityHint");
@@ -134,6 +139,72 @@ function updateLocationLine() {
   }
 }
 
+function formatTemp(celsius) {
+  if (celsius == null || Number.isNaN(celsius)) return "--";
+  const f = celsius * 1.8 + 32;
+  return `${Math.round(celsius)}°C / ${Math.round(f)}°F`;
+}
+
+function weatherKey(code, isDay) {
+  const day = isDay === 1;
+  if (code === 0) return day ? "clear-day" : "clear-night";
+  if (code >= 1 && code <= 2) return day ? "partly-day" : "partly-night";
+  if (code === 3) return "cloudy";
+  if (code === 45 || code === 48) return "fog";
+  if (
+    (code >= 51 && code <= 57) ||
+    (code >= 61 && code <= 67) ||
+    (code >= 80 && code <= 82)
+  ) {
+    return day ? "rain-day" : "rain-night";
+  }
+  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+    return day ? "snow-day" : "snow-night";
+  }
+  if (code === 95 || code === 96 || code === 99) {
+    return day ? "thunder-day" : "thunder-night";
+  }
+  return day ? "clear-day" : "clear-night";
+}
+
+async function updateWeather(lat, lon) {
+  if (!heroWeather) return;
+  if (lat == null || lon == null) {
+    if (heroWeatherText) {
+      heroWeatherText.textContent = "Weather --°C / --°F";
+    }
+    return;
+  }
+  const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
+  if (state.lastWeatherKey === key) return;
+  state.lastWeatherKey = key;
+  if (heroWeatherText) {
+    heroWeatherText.textContent = "Weather …";
+  }
+  try {
+    const res = await fetch(
+      `/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
+    );
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      if (heroWeatherText) {
+        heroWeatherText.textContent = "Weather --°C / --°F";
+      }
+      return;
+    }
+    if (heroWeatherText) {
+      heroWeatherText.textContent = `Weather ${formatTemp(data.temperature_c)}`;
+    }
+    if (heroWeather.dataset) {
+      heroWeather.dataset.wx = weatherKey(data.weather_code, data.is_day);
+    }
+  } catch (err) {
+    if (heroWeatherText) {
+      heroWeatherText.textContent = "Weather --°C / --°F";
+    }
+  }
+}
+
 function setActiveCity(city) {
   state.activeLat = city.lat ?? null;
   state.activeLon = city.lon ?? null;
@@ -142,6 +213,7 @@ function setActiveCity(city) {
   state.activeSunrise = city.sunrise ?? null;
   state.activeSunset = city.sunset ?? null;
   updateUserDot();
+  updateWeather(state.activeLat, state.activeLon);
   updateTimes();
 }
 
