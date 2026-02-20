@@ -180,11 +180,11 @@
       class="absolute inset-0 bg-[linear-gradient(120deg,_rgba(255,255,255,0.04)_1px,_transparent_1px),linear-gradient(60deg,_rgba(255,255,255,0.03)_1px,_transparent_1px)] bg-[length:140px_140px] opacity-40"
     ></div>
 
-    <main class="relative z-10 px-6 md:px-12 py-12 max-w-6xl mx-auto">
-      <header class="flex flex-col gap-8 md:gap-12">
+    <main class="relative z-10 px-6 md:px-12 py-12 w-full max-w-[1600px] mx-auto">
+      <header class="flex flex-col gap-10 md:gap-14">
         <div>
           <p class="uppercase tracking-[0.4em] text-xs text-accent-400 mb-3">Exact world time</p>
-          <h1 class="text-4xl md:text-6xl font-semibold">Your time is exact.</h1>
+          <h1 class="text-5xl md:text-7xl font-semibold">Your time is exact.</h1>
           <p class="text-silver-300 mt-3 max-w-xl">
             Local time is detected by IP and synced to the server for accuracy. Sunrise and
             sunset times are calculated from your approximate location.
@@ -192,12 +192,12 @@
         </div>
 
         <section
-          class="relative rounded-3xl border border-white/10 bg-navy-800/70 shadow-glow p-8 md:p-10"
+          class="relative rounded-3xl border border-white/10 bg-navy-800/70 shadow-glow p-10 md:p-12"
         >
-          <p class="text-silver-300 text-sm" id="locationLine">Locating you…</p>
+          <p class="text-silver-300 text-base" id="locationLine">Locating you…</p>
           <div
             id="heroWeather"
-            class="wx absolute right-6 top-6 text-xs text-silver-200 bg-navy-900/60 border border-white/10 rounded-full px-3 py-1"
+            class="wx absolute right-8 top-8 text-sm text-silver-200 bg-navy-900/60 border border-white/10 rounded-full px-4 py-2"
             data-wx="clear-day"
           >
             <span class="wx-icon" aria-hidden="true">
@@ -244,13 +244,13 @@
             </span>
             <span class="wx-text">Weather --°C / --°F</span>
           </div>
-          <div class="mt-4 flex flex-wrap items-end gap-4">
-            <div class="text-5xl md:text-7xl font-semibold tracking-wide" id="heroTime">
+          <div class="mt-5 flex flex-wrap items-end gap-4">
+            <div class="text-6xl md:text-8xl font-semibold tracking-wide" id="heroTime">
               --:--:--
             </div>
-            <div class="text-2xl md:text-3xl text-silver-300" id="heroSuffix"></div>
+            <div class="text-3xl md:text-4xl text-silver-300" id="heroSuffix"></div>
           </div>
-          <div class="mt-3 flex flex-wrap items-center gap-4 text-silver-300">
+          <div class="mt-4 flex flex-wrap items-center gap-5 text-silver-300 text-base">
             <span id="heroDate">--</span>
             <span class="h-1.5 w-1.5 rounded-full bg-accent-400"></span>
             <span id="heroZone">UTC</span>
@@ -260,52 +260,52 @@
         </section>
       </header>
 
-      <section class="mt-12 grid gap-6 md:grid-cols-2">
-        <div class="rounded-2xl border border-white/10 bg-navy-800/60 p-6">
-          <label class="block text-sm font-semibold text-silver-200">Add a city</label>
-          <div class="mt-4 flex flex-col sm:flex-row gap-3">
+      <section class="mt-14 grid gap-8 md:grid-cols-2">
+        <div class="rounded-2xl border border-white/10 bg-navy-800/60 p-7">
+          <label class="block text-base font-semibold text-silver-200">Add a city</label>
+          <div class="mt-5 flex flex-col sm:flex-row gap-4">
             <input
               id="cityInput"
-              class="flex-1 rounded-xl bg-navy-900/70 border border-white/10 px-4 py-3 text-silver-100 placeholder:text-silver-300 focus:outline-none focus:ring-2 focus:ring-accent-500"
-              placeholder="e.g. Mexico City"
+              class="flex-1 rounded-xl bg-navy-900/70 border border-white/10 px-5 py-4 text-silver-100 placeholder:text-silver-300 text-base focus:outline-none focus:ring-2 focus:ring-accent-500"
+              placeholder="e.g. Austin, TX"
             />
             <button
               id="addCityBtn"
-              class="rounded-xl bg-silver-200 text-navy-900 font-semibold px-5 py-3 hover:bg-silver-100 transition"
+              class="rounded-xl bg-silver-200 text-navy-900 font-semibold px-6 py-4 hover:bg-silver-100 transition text-base"
             >
               Add
             </button>
           </div>
-          <p class="text-xs text-silver-300 mt-3" id="cityHint">
+          <p class="text-sm text-silver-300 mt-3" id="cityHint">
             Search by city name and we’ll find the timezone.
           </p>
         </div>
 
-        <div class="rounded-2xl border border-white/10 bg-navy-800/60 p-6">
-          <label class="block text-sm font-semibold text-silver-200">Sync status</label>
-          <div class="mt-4 flex items-center gap-4 text-silver-100 font-semibold">
+        <div class="rounded-2xl border border-white/10 bg-navy-800/60 p-7">
+          <label class="block text-base font-semibold text-silver-200">Sync status</label>
+          <div class="mt-5 flex items-center gap-4 text-silver-100 font-semibold text-base">
             <span id="syncStatus">Syncing...</span>
             <span class="text-silver-300" id="syncDelta">--</span>
           </div>
-          <p class="text-xs text-silver-300 mt-3">Server UTC keeps every clock aligned.</p>
+          <p class="text-sm text-silver-300 mt-3">Server UTC keeps every clock aligned.</p>
         </div>
       </section>
 
-      <section class="mt-12">
-        <div class="flex items-center justify-between mb-5">
-          <h2 class="text-xl font-semibold">Day / Night Terminator</h2>
-          <p class="text-xs text-silver-300">Approximate solar position</p>
+      <section class="mt-14">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-semibold">Day / Night Terminator</h2>
+          <p class="text-sm text-silver-300">Approximate solar position</p>
         </div>
-        <div class="rounded-3xl border border-white/10 bg-navy-800/60 p-6 shadow-glow">
+        <div class="rounded-3xl border border-white/10 bg-navy-800/60 p-4 md:p-6 shadow-glow">
           <svg
             id="worldMap"
-            viewBox="0 0 800 400"
-            class="w-full h-auto"
+            viewBox="0 0 2200 1100"
+            class="w-full h-[520px] md:h-[820px] lg:h-[900px]"
             aria-label="World map with day and night boundary"
           >
-            <rect width="800" height="400" fill="rgba(15, 23, 42, 0.6)"></rect>
+            <rect width="2200" height="1100" fill="rgba(15, 23, 42, 0.6)"></rect>
             <defs>
-              <clipPath id="landClip">
+              <clipPath id="landClip" clipPathUnits="userSpaceOnUse">
                 <path id="mapLandClip" d=""></path>
               </clipPath>
             </defs>
@@ -323,39 +323,21 @@
               stroke="rgba(91, 184, 255, 0.85)"
               stroke-width="2"
             ></path>
-            <circle id="userDot" r="5" fill="rgba(247, 201, 72, 0.95)"></circle>
+            <rect
+              id="userDot"
+              width="10"
+              height="10"
+              fill="#ff0000"
+              rx="2"
+              ry="2"
+            ></rect>
           </svg>
           <div
-            class="mt-3 grid gap-0 text-[10px] uppercase tracking-[0.25em] text-silver-300/80"
-            style="grid-template-columns: repeat(25, minmax(0, 1fr));"
+            id="tzLegend"
+            class="mt-3 grid gap-1 text-[10px] uppercase tracking-[0.2em] text-silver-300/80"
+            style="grid-template-columns: repeat(27, minmax(0, 1fr));"
             aria-hidden="true"
-          >
-            <span class="text-center">-12</span>
-            <span class="text-center">-11</span>
-            <span class="text-center">-10</span>
-            <span class="text-center">-9</span>
-            <span class="text-center">-8</span>
-            <span class="text-center">-7</span>
-            <span class="text-center">-6</span>
-            <span class="text-center">-5</span>
-            <span class="text-center">-4</span>
-            <span class="text-center">-3</span>
-            <span class="text-center">-2</span>
-            <span class="text-center">-1</span>
-            <span class="text-center">UTC</span>
-            <span class="text-center">+1</span>
-            <span class="text-center">+2</span>
-            <span class="text-center">+3</span>
-            <span class="text-center">+4</span>
-            <span class="text-center">+5</span>
-            <span class="text-center">+6</span>
-            <span class="text-center">+7</span>
-            <span class="text-center">+8</span>
-            <span class="text-center">+9</span>
-            <span class="text-center">+10</span>
-            <span class="text-center">+11</span>
-            <span class="text-center">+12</span>
-          </div>
+          ></div>
         </div>
       </section>
 

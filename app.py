@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import json
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import requests
@@ -15,6 +17,11 @@ SUN_CACHE: dict[str, dict] = {}
 SUN_CACHE_TTL = 3600
 CITY_CACHE: dict[str, dict] = {}
 CITY_CACHE_TTL = 86400
+TZ_OFFSET_CACHE: dict[str, object] = {"ts": 0, "data": {}}
+TZ_OFFSET_TTL = 3600
+TZ_GEO_CACHE: dict[str, object] = {"ts": 0, "data": None}
+TZ_GEO_TTL = 3600
+TZ_SIMPLIFY_STEP = 5
 
 
 DEFAULT_TZS = [
@@ -264,6 +271,94 @@ def api_weather():
         return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
     except Exception:
         return jsonify({"error": "weather failed"}), 502
+
+
+def _load_tz_geo_with_offsets():
+    now = datetime.now(timezone.utc)
+    tz_path = Path(app.static_folder or "static") / "data" / "timezones-now.geojson"
+    with tz_path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+    if not isinstance(data, dict) or data.get("type") != "FeatureCollection":
+        raise ValueError("timezone data must be a GeoJSON FeatureCollection")
+
+    def _simplify_ring(ring: list[list[float]]) -> list[list[float]]:
+        if len(ring) <= 8 or TZ_SIMPLIFY_STEP <= 1:
+            return ring
+        simplified = ring[::TZ_SIMPLIFY_STEP]
+        if simplified and simplified[0] != simplified[-1]:
+            simplified.append(simplified[0])
+        return simplified
+
+    def _simplify_geom(geom: dict) -> None:
+        gtype = geom.get("type")
+        coords = geom.get("coordinates")
+        if gtype == "Polygon":
+            geom["coordinates"] = [_simplify_ring(ring) for ring in (coords or [])]
+        elif gtype == "MultiPolygon":
+            geom["coordinates"] = [
+                [_simplify_ring(ring) for ring in poly] for poly in (coords or [])
+            ]
+
+    for feature in data.get("features", []):
+        try:
+            _simplify_geom(feature.get("geometry", {}))
+        except Exception:
+            pass
+        tzid = feature.get("properties", {}).get("tzid")
+        try:
+            offset = now.astimezone(ZoneInfo(tzid)).utcoffset()
+            hours = offset.total_seconds() / 3600 if offset else 0
+        except Exception:
+            hours = 0
+        feature.setdefault("properties", {})["offset"] = hours
+    return data
+
+
+@app.route("/api/tz_geo")
+def api_tz_geo():
+    now = time.time()
+    cached = TZ_GEO_CACHE.get("data")
+    cached_ts = TZ_GEO_CACHE.get("ts", 0)
+    if cached and now - cached_ts < TZ_GEO_TTL:
+        return jsonify(cached)
+    try:
+        data = _load_tz_geo_with_offsets()
+        TZ_GEO_CACHE["data"] = data
+        TZ_GEO_CACHE["ts"] = now
+        return jsonify(data)
+    except Exception:
+        return jsonify({"error": "tz geo failed"}), 502
+
+
+@app.route("/api/tz_offsets", methods=["POST"])
+def api_tz_offsets():
+    payload = request.get_json(silent=True) or {}
+    tzids = payload.get("tzids") or []
+    if not isinstance(tzids, list) or not tzids:
+        return jsonify({"error": "missing tzids"}), 400
+
+    now = datetime.now(timezone.utc)
+    cached = TZ_OFFSET_CACHE.get("data") or {}
+    cached_ts = TZ_OFFSET_CACHE.get("ts", 0)
+    results = {}
+    if time.time() - cached_ts < TZ_OFFSET_TTL:
+        results = {tz: cached.get(tz) for tz in tzids if tz in cached}
+
+    missing = [tz for tz in tzids if tz not in results]
+    for tz in missing:
+        try:
+            offset = now.astimezone(ZoneInfo(tz)).utcoffset()
+            hours = offset.total_seconds() / 3600 if offset else 0
+            results[tz] = hours
+        except Exception:
+            results[tz] = 0
+
+    if missing:
+        cached.update(results)
+        TZ_OFFSET_CACHE["data"] = cached
+        TZ_OFFSET_CACHE["ts"] = time.time()
+
+    return jsonify({"offsets": results})
 
 
 if __name__ == "__main__":

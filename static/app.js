@@ -46,6 +46,11 @@ const mapLand = document.getElementById("mapLand");
 const mapLandClip = document.getElementById("mapLandClip");
 const tzBands = document.getElementById("tzBands");
 const userDot = document.getElementById("userDot");
+const tzLegend = document.getElementById("tzLegend");
+
+const MAP_WIDTH = 2200;
+const MAP_HEIGHT = 1100;
+const MAP_ZOOM = 1;
 
 const timeFmt = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
@@ -85,49 +90,102 @@ function formatSun(timeIso, tz) {
   }).format(dt);
 }
 
-const TZ_BAND_COLORS = [
-  "#2d6a8a",
-  "#3a8fb7",
-  "#4aa3a8",
-  "#5b8f6f",
-  "#7aa85f",
-  "#a7b35d",
-  "#c9a65f",
-  "#d48a5f",
-  "#d66a64",
-  "#c55a7d",
-  "#8a6aa8",
-  "#5f6bb3",
-  "#4e7fc2",
-  "#3e94c7",
-  "#3da6b3",
-  "#58b07f",
-  "#8ab36a",
-  "#b7b86c",
-  "#d7b46e",
-  "#d6976b",
-  "#c97a6b",
-  "#b36a7b",
-  "#8e6a9c",
-  "#6d6fa8",
-];
+function colorForOffset(offset) {
+  const min = -12;
+  const max = 14;
+  const clamped = Math.min(max, Math.max(min, offset));
+  const palette = [
+    "#24478f",
+    "#2b65a0",
+    "#2e86b5",
+    "#34a0be",
+    "#3fb7c8",
+    "#4fc9a6",
+    "#66d08e",
+    "#87d86f",
+    "#a7de61",
+    "#c9e055",
+    "#e2d14f",
+    "#e9b84f",
+    "#e59a4b",
+    "#e07c49",
+    "#d9634c",
+    "#cf4f5a",
+    "#c0486d",
+    "#aa4d84",
+    "#8f5796",
+    "#6f5fa0",
+    "#5965a3",
+    "#4b7db0",
+    "#3f94b8",
+    "#33a7bd",
+    "#39b8a8",
+    "#55c28b",
+    "#7cc76c",
+  ];
+  const idx = Math.round(clamped - min);
+  return palette[idx] || palette[0];
+}
 
-function renderTimezoneBands() {
-  if (!tzBands) return;
-  tzBands.innerHTML = "";
-  const width = 800;
-  const height = 400;
-  const bandWidth = width / 24;
-  for (let i = 0; i < 24; i += 1) {
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", (i * bandWidth).toFixed(2));
-    rect.setAttribute("y", "0");
-    rect.setAttribute("width", bandWidth.toFixed(2));
-    rect.setAttribute("height", height.toFixed(2));
-    rect.setAttribute("fill", TZ_BAND_COLORS[i % TZ_BAND_COLORS.length]);
-    rect.setAttribute("fill-opacity", "0.45");
-    tzBands.appendChild(rect);
+function renderTzLegend() {
+  if (!tzLegend) return;
+  tzLegend.innerHTML = "";
+  for (let offset = -12; offset <= 14; offset += 1) {
+    const item = document.createElement("div");
+    item.className = "flex flex-col items-center gap-1";
+
+    const swatch = document.createElement("div");
+    swatch.className = "h-2 w-full rounded-sm";
+    swatch.style.background = colorForOffset(offset);
+    swatch.style.opacity = "0.9";
+
+    const label = document.createElement("span");
+    label.textContent = offset === 0 ? "UTC" : offset > 0 ? `+${offset}` : `${offset}`;
+
+    item.append(swatch, label);
+    tzLegend.appendChild(item);
   }
+}
+
+function sortTimezoneFeatures(features) {
+  try {
+    return features;
+  } catch (err) {
+    return features;
+  }
+}
+
+function renderTimezoneShapes(geo, projection) {
+  if (!tzBands || !geo || !projection) return;
+  tzBands.innerHTML = "";
+  const features = geo.features || [];
+  const path = window.d3.geoPath(projection);
+  const offsetsUsed = new Set();
+  const sorted = sortTimezoneFeatures(features).slice().sort((a, b) => {
+    try {
+      return path.area(b) - path.area(a);
+    } catch (err) {
+      return 0;
+    }
+  });
+  sorted.forEach((feature) => {
+    try {
+      const offset = Number(feature?.properties?.offset ?? 0);
+      offsetsUsed.add(offset);
+      const d = path(feature);
+      if (!d) return;
+      const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      shape.setAttribute("d", d);
+      shape.setAttribute("fill", colorForOffset(offset));
+      shape.setAttribute("fill-opacity", "0.75");
+      shape.setAttribute("fill-rule", "evenodd");
+      shape.setAttribute("stroke", "rgba(15, 23, 42, 0.12)");
+      shape.setAttribute("stroke-width", "0.4");
+      tzBands.appendChild(shape);
+    } catch (err) {
+      // skip bad feature
+    }
+  });
 }
 
 function updateLocationLine() {
@@ -371,7 +429,7 @@ function computeSolarPosition(date) {
   return { declination: decl, subsolarLon: subLon };
 }
 
-function lonLatToXY(lon, lat, width = 800, height = 400) {
+function lonLatToXY(lon, lat, width = MAP_WIDTH, height = MAP_HEIGHT) {
   if (state.projection) {
     const point = state.projection([lon, lat]);
     return { x: point[0], y: point[1] };
@@ -415,9 +473,15 @@ function updateUserDot() {
     userDot.setAttribute("opacity", "0");
     return;
   }
-  const userPoint = lonLatToXY(state.activeLon, state.activeLat);
-  userDot.setAttribute("cx", userPoint.x.toFixed(2));
-  userDot.setAttribute("cy", userPoint.y.toFixed(2));
+  const userPoint = lonLatToXY(
+    state.activeLon,
+    state.activeLat,
+    MAP_WIDTH,
+    MAP_HEIGHT
+  );
+  const size = 10;
+  userDot.setAttribute("x", (userPoint.x - size / 2).toFixed(2));
+  userDot.setAttribute("y", (userPoint.y - size / 2).toFixed(2));
   userDot.setAttribute("opacity", "1");
 }
 
@@ -431,15 +495,28 @@ async function loadMap() {
     const land = window.topojson.feature(topo, topo.objects.land);
     const projection = window.d3
       .geoEquirectangular()
-      .fitSize([800, 400], land);
+      .fitSize([MAP_WIDTH, MAP_HEIGHT], land);
+    const baseScale = projection.scale();
+    projection.scale(baseScale * MAP_ZOOM);
+    projection.translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
     const path = window.d3.geoPath(projection);
     mapLand.setAttribute("d", path(land));
     if (mapLandClip) {
       mapLandClip.setAttribute("d", path(land));
     }
-    renderTimezoneBands();
+    try {
+      const tzRes = await fetch("/api/tz_geo");
+      if (tzRes.ok) {
+        const tzGeo = await tzRes.json();
+        renderTimezoneShapes(tzGeo, projection);
+        renderTzLegend();
+      }
+    } catch (err) {
+      tzBands.innerHTML = "";
+    }
     state.projection = projection;
     updateTerminator();
+    updateUserDot();
   } catch (err) {
     mapLand.setAttribute("d", "");
   }
