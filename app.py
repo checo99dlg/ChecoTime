@@ -258,15 +258,34 @@ def api_weather():
                 "current": "temperature_2m,weather_code,is_day",
                 "temperature_unit": "celsius",
             },
-            timeout=3,
+            timeout=6,
+            headers={"User-Agent": "time-web"},
+        )
+        if res.ok:
+            data = res.json()
+            current = data.get("current") or {}
+            temp = current.get("temperature_2m")
+            code = current.get("weather_code")
+            is_day = current.get("is_day")
+            return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
+
+        res = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "current_weather": "true",
+                "temperature_unit": "celsius",
+            },
+            timeout=6,
             headers={"User-Agent": "time-web"},
         )
         if not res.ok:
             return jsonify({"error": "weather failed"}), 502
         data = res.json()
-        current = data.get("current") or {}
-        temp = current.get("temperature_2m")
-        code = current.get("weather_code")
+        current = data.get("current_weather") or {}
+        temp = current.get("temperature")
+        code = current.get("weathercode")
         is_day = current.get("is_day")
         return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
     except Exception:
