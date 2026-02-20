@@ -7,7 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import requests
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 app = Flask(__name__)
 
@@ -316,16 +316,8 @@ def _load_tz_geo_with_offsets():
 
 @app.route("/api/tz_geo")
 def api_tz_geo():
-    now = time.time()
-    cached = TZ_GEO_CACHE.get("data")
-    cached_ts = TZ_GEO_CACHE.get("ts", 0)
-    if cached and now - cached_ts < TZ_GEO_TTL:
-        return jsonify(cached)
     try:
-        data = _load_tz_geo_with_offsets()
-        TZ_GEO_CACHE["data"] = data
-        TZ_GEO_CACHE["ts"] = now
-        return jsonify(data)
+        return send_file("static/data/timezones-now.min.geojson")
     except Exception:
         return jsonify({"error": "tz geo failed"}), 502
 
