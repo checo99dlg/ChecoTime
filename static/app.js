@@ -543,27 +543,15 @@ async function loadLocal() {
     state.localTz = data.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
     state.sunrise = data.sunrise;
     state.sunset = data.sunset;
-    state.localLat = data.latitude;
-    state.localLon = data.longitude;
-    if (state.activeLat == null && state.localLat != null) {
-      setActiveCity({
-        label: state.localLabel || state.localTz || "Local",
-        tz: state.localTz || "UTC",
-        sunrise: state.sunrise,
-        sunset: state.sunset,
-        lat: state.localLat,
-        lon: state.localLon,
-      });
-    }
+    state.localLat = data.latitude ?? null;
+    state.localLon = data.longitude ?? null;
 
     const parts = [data.city, data.region, data.country].filter(Boolean);
-    state.localLabel = parts.join(", ") || "Local time";
-    if (
-      state.activeTz === state.localTz &&
-      (!state.activeLabel ||
-        state.activeLabel === state.localTz ||
-        state.activeLabel === "Local")
-    ) {
+    state.localLabel = parts.join(", ") || state.localTz;
+
+    // Apply local location if no city has been manually selected yet,
+    // or if the active city is still the local one (update label/coords).
+    if (!state.activeTz || state.activeTz === state.localTz) {
       setActiveCity({
         label: state.localLabel,
         tz: state.localTz || "UTC",
