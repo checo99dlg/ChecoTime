@@ -268,6 +268,7 @@ def api_weather():
             code = current.get("weather_code")
             is_day = current.get("is_day")
             return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
+        print(f"/api/weather primary failed: {res.status_code} {res.text[:200]}")
 
         res = requests.get(
             "https://api.open-meteo.com/v1/forecast",
@@ -281,6 +282,7 @@ def api_weather():
             headers={"User-Agent": "time-web"},
         )
         if not res.ok:
+            print(f"/api/weather fallback failed: {res.status_code} {res.text[:200]}")
             return jsonify({"error": "weather failed"}), 502
         data = res.json()
         current = data.get("current_weather") or {}
@@ -289,6 +291,7 @@ def api_weather():
         is_day = current.get("is_day")
         return jsonify({"temperature_c": temp, "weather_code": code, "is_day": is_day})
     except Exception:
+        print("/api/weather exception")
         return jsonify({"error": "weather failed"}), 502
 
 
