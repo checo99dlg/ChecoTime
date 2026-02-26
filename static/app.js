@@ -7,7 +7,7 @@ const state = {
   serverSkewMs: 0,
   perfStart: performance.now(),
   baseNowMs: Date.now(),
-  localTz: null,
+  localTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
   localLabel: null,
   sunrise: null,
   sunset: null,
@@ -540,11 +540,15 @@ async function loadLocal() {
   try {
     const res = await fetch("/api/local");
     const data = await res.json();
-    state.localTz = data.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    state.sunrise = data.sunrise;
-    state.sunset = data.sunset;
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     state.localLat = data.latitude ?? null;
     state.localLon = data.longitude ?? null;
+    state.sunrise = data.sunrise;
+    state.sunset = data.sunset;
+    // Only trust IP timezone when coordinates were returned (lookup actually succeeded).
+    // If ipapi.co fails it returns {tz:"UTC", latitude:null} — that "UTC" is truthy and
+    // would silently override the correct browser timezone without this guard.
+    state.localTz = (state.localLat != null && data.tz) ? data.tz : browserTz;
 
     const parts = [data.city, data.region, data.country].filter(Boolean);
     state.localLabel = parts.join(", ") || state.localTz;
